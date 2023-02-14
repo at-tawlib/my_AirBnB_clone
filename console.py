@@ -30,6 +30,19 @@ class HBNBCommand(cmd.Cmd):
         """Does nothing when Enter is hit"""
         pass
 
+    def precmd(self, line):
+        """Intercepts commands to test for Class.all()"""
+        # use RE to check if line is in the format 'String.all()'
+        match = re.search(r'^\w+[.]\w+\(\)$', line)
+        if not match:
+            return line
+        
+        # split the line to return formated command
+        split = line.split(".")
+        command = f"all {split[0]}"
+        return command
+
+
     def do_create(self, line):
         """creates a new instance of base model, saves it and prints the id"""
         class_dict = {
@@ -187,6 +200,30 @@ class HBNBCommand(cmd.Cmd):
                                     storage.save()
                             except ValueError:
                                 print("Data not Updated")
+    
+    def do_count(self, line):
+        """Retrieves the number of instances of a class"""
+        class_dict = {
+                "BaseModel": BaseModel,
+                "User": User,
+                "State": State,
+                "City": City,
+                "Amenity": Amenity,
+                "Place": Place,
+                "Review": Review
+                }
+
+        if line == "" or line is None:
+            print(len(storage.all().items()))
+        elif line in class_dict:
+            obj_class = class_dict[line]
+            count_items = []
+            for key, value in storage.all().items():
+                if type(value) == obj_class:
+                    count_items.append(storage.all()[key])
+            print(len(count_items))
+        else:
+            print("** class doesn't exist **")
 
 
 if __name__ == '__main__':
